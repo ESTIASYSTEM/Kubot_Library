@@ -1,0 +1,211 @@
+#include "Kubot.hpp"
+
+
+void Kubot::init(int YL, int YR, int RL, int RR, bool load_calibration, int NoiseSensor, int Buzzer, int USTrigger, int USEcho)
+{
+
+  servo_pins[0] = YL;
+  servo_pins[1] = YR;
+  servo_pins[2] = RL;
+  servo_pins[3] = RR;
+
+  attachServos();
+
+  isResting=false;
+
+  if (load_calibration)
+  {
+    for (int i = 0; i < 4; i++)
+    {
+      int servo_trim = EEPROM.read(i);
+      if (servo_trim > 128) servo_trim -= 256;
+      servo[i].SetTrim(servo_trim);
+    }
+  }
+
+  // Initialisation du capteur ultrason
+
+  us.init(USTrigger, USEcho);
+
+  // Buzzer et Pin de bruit
+  pinBuzzer = Buzzer;
+  pinMode(Buzzer, OUTPUT);
+
+  pinNoiseSensor = NoiseSensor;
+  pinMode(NoiseSensor, INPUT);
+
+  // On met les servos à une position de départ.
+  for(int i(0) ; i < 4 ; i++)
+  {
+    servo[i].SetPosition(90);
+    servo_position[i] = 90;
+  }
+
+  delay(250);
+}
+
+/////////////////////////////////
+/// Fonctions Attach et Detach //
+/////////////////////////////////
+
+void Kubot::attachServos()
+{
+      servo[0].attach(servo_pins[0]);
+      servo[1].attach(servo_pins[1]);
+      servo[2].attach(servo_pins[2]);
+      servo[3].attach(servo_pins[3]);
+}
+
+void Kubot::detachServos()
+{
+      servo[0].detach();
+      servo[1].detach();
+      servo[2].detach();
+      servo[3].detach();
+}
+
+/////////////////////////////////
+/// Réglage des Trim du servo ///
+/////////////////////////////////
+
+void Kubot::setTrims(int YL, int YR, int RL, int RR)
+{
+
+  servo[0].SetTrim(YL);
+  servo[1].SetTrim(YR);
+  servo[2].SetTrim(RL);
+  servo[3].SetTrim(RR);
+
+}
+
+
+void Kubot::saveTrimsOnEEPROM()
+{
+  for(int i(0); i < 4 ; i++)
+    EEPROM.write(i, servo[i].getTrim());
+}
+
+///////////////
+
+void Kubot::moveServos(int duration, int  servo_target[])
+{
+  setRestState(false);
+
+  float increment[4];
+  unsigned long finalTime;
+  unsigned long partialTime;
+
+  attachServos();
+
+
+  if(duration > 10) // Si la durée est suffisament longue
+  {
+    // on calcul l'incremetation de chaque servo et le temps au quel les servos auront
+    // fini de bouger
+    // L'incrementation en temps est de 10ms
+    for(int i(0); i < 4 ; i++)
+      increment[i] = ((servo_target[i] - servo_position[i]))/(duration/10.f);
+
+    finalTime = millis() + duration;
+
+    for (int it(1) ; millis() < finalTime ; it++)
+    {
+      partialTime = millis() + 10;
+
+      for (int j(0) ; j < 4 ; j++)
+      {
+        //servo_position[j] += it * increment[j];
+        servo[j].SetPosition(servo_position[j] + it * increment[j]);
+      }
+
+      while (millis() < partialTime); // on attend qu'au moins 10 ms se soit écouler
+    }
+
+  }
+  else //// si la durée est trop courte alors on bouge le plus vite possible
+  {
+    for(int i(0); i < 4 ; ++i)
+    {
+      servo[i].SetPosition(servo_target[i]);
+      servo_position[i] = servo_target[i];
+    }
+  }
+
+  // Une fois les mouvements effectué, on enregistre la position des servos
+  for (int i = 0; i < 4; i++)
+    servo_position[i] = servo_target[i];
+}
+
+void Kubot::oscillateServos(int A[4], int O[4], int T, double Ph[4], float cycle)
+{
+  for (int i(0); i<4; i++)
+  {
+    servo[i].SetO(O[i]);
+    servo[i].SetA(A[i]);
+    servo[i].SetT(T);
+    servo[i].SetPh(Ph[i]);
+  }
+
+  float ref(millis());
+  float x(ref);
+
+  while(x <= T*cycle+ref)
+  {
+    for (int i(0); i < 4; i++)
+    {
+      servo[i].refresh();
+    }
+    x = millis();
+  }
+
+  for (unsigned i(0) ; i < 4 ; ++i)
+  {
+    //TODO: Recuper la position des servo a la fin du cycle
+  }
+}
+
+//-- HOME = Kubot à sa position de repos
+void Kubot::home()
+{
+  if(!isResting)
+  {
+    int homes[4] = {90,90,90,90};
+    moveServos(500,homes);
+
+    setRestState(true);
+
+    detachServos();
+  }
+}
+
+bool Kubot::getRestState()
+{
+  return isResting;
+}
+
+void Kubot::setRestState(bool state)
+{
+  isResting = state;
+}
+
+
+
+
+float Kubot::getDistance() //US sensor
+{
+  return us.read();
+}
+
+// On recupere le bruit sur une pin vide. Celà permet de generer des nombres
+// aléatoires, etc.
+int Kubot::getNoise()
+{
+  int readingCount(2); // Le nombre de mesures à effectuer toujours > 0
+  int noiseLevel(0);
+
+  for (unsigned i(0) ; i < readingCount ; ++i)
+    noiseLevel += analogRead(pinNoiseSensor);
+
+  return noiseLevel / readingCount;
+
+}
