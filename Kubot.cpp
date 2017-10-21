@@ -226,3 +226,29 @@ int Kubot::getNoise()
   return noiseLevel / readingCount;
 
 }
+
+
+
+//////////////////////////////
+/// Son: Gestion du buzzer ///
+//////////////////////////////
+
+void Kubot::_tone(float frequency, long noteDuration, long silenceDuration)
+{
+
+  tone(pinBuzzer,frequency,noteDuration);
+
+  // On attend que la note se termine...
+  delay(noteDuration);
+
+  // On attend au minimum 1ms avant l'execution d'autres commandes
+  if(silenceDuration < 1)
+    silenceDuration = 1;
+
+  delay(silenceDuration);
+  
+}
+
+
+
+// End of Kubot.cpp

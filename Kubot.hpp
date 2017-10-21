@@ -58,6 +58,8 @@ class Kubot
     float getDistance(); //Capteur ultrasons
     int getNoise();      //Capteur de bruit
 
+    //-- Son
+    void _tone(float frequency, long noteDuration, long silenceDuration = 1);
 
   private:
 
