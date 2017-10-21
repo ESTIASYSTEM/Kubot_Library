@@ -6,7 +6,6 @@
 #include <EEPROM.h>
 
 #include <US.h>
-#include <LedMatrix.h>
 #include <BatReader.h>
 
 
@@ -25,12 +24,14 @@
 #define PIN_NoiseSensor A6
 
 
+// Classe Kubot.
+// Cette classe definit un robot Kubot.
+// Elle permet de le controler
 class Kubot
 {
   public:
 
     //-- Initialisation du Kubot.
-    //-- A savoir: On ne définit pas de constructeur pour simplifier la librairie
     void init(int YL, int YR, int RL, int RR, bool load_calibration=true,
               int NoiseSensor=PIN_NoiseSensor, int Buzzer=PIN_Buzzer,
               int USTrigger=PIN_Trigger, int USEcho=PIN_Echo);
@@ -43,7 +44,7 @@ class Kubot
     void setTrims(int YL, int YR, int RL, int RR);
     void saveTrimsOnEEPROM();
 
-    //-- Predetermined Motion Functions
+    //-- Contrôle basique des servos
     void moveServos(int duration, int  servo_target[]);
     void oscillateServos(int A[4], int O[4], int T, double phase_diff[4], float cycle);
 
@@ -52,40 +53,10 @@ class Kubot
     bool getRestState();
     void setRestState(bool state);
 
-/*    //-- Predetermined Motion Functions
-    void jump(float steps=1, int T = 2000);
 
-    void walk(float steps=4, int T=1000, int dir = FORWARD);
-    void turn(float steps=4, int T=2000, int dir = LEFT);
-    void bend (int steps=1, int T=1400, int dir=LEFT);
-    void shakeLeg (int steps=1, int T = 2000, int dir=RIGHT);
-
-    void updown(float steps=1, int T=1000, int h = 20);
-    void swing(float steps=1, int T=1000, int h=20);
-    void tiptoeSwing(float steps=1, int T=900, int h=20);
-    void jitter(float steps=1, int T=500, int h=20);
-    void ascendingTurn(float steps=1, int T=900, int h=20);
-
-    void moonwalker(float steps=1, int T=900, int h=20, int dir=LEFT);
-    void crusaito(float steps=1, int T=900, int h=20, int dir=FORWARD);
-    void flapping(float steps=1, int T=1000, int h=20, int dir=FORWARD);
-*/
-    //-- Sensors functions
-    float getDistance(); //US sensor
-    int getNoise();      //Noise Sensor
-
-    //-- Battery
-    double getBatteryLevel();
-    double getBatteryVoltage();
-
-    //-- Sounds
-    void _tone (float noteFrequency, long noteDuration, int silentDuration);
-    void bendTones (float initFrequency, float finalFrequency, float prop,
-                    long noteDuration, int silentDuration);
-    void sing(int songName);
-
-    //-- Gestures
-    void playGesture(int gesture);
+    //-- Fonctions de capteurs
+    float getDistance(); //Capteur ultrasons
+    int getNoise();      //Capteur de bruit
 
 
   private:
