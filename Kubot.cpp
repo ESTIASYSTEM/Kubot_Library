@@ -233,6 +233,7 @@ int Kubot::getNoise()
 /// Son: Gestion du buzzer ///
 //////////////////////////////
 
+// Permet au Kubot de jouer une certaine frequence pendant un temps donné
 void Kubot::_tone(float frequency, long noteDuration, long silenceDuration)
 {
 
@@ -246,9 +247,35 @@ void Kubot::_tone(float frequency, long noteDuration, long silenceDuration)
     silenceDuration = 1;
 
   delay(silenceDuration);
-  
+
 }
 
+
+
+// Permet au Kubot de jouer une note courbée
+// dans la première itération, le temps par note est fixé à 15ms
+void Kubot::bendTones(float initFrequency, float finalFrequency, float step)
+{
+    bool ascending = (finalFrequency > initFrequency);
+
+    // la pente permet de définir comment la note final sera atteinte.
+    float slope = fabs(finalFrequency - initFrequency) / 100.f;
+
+    if (ascending) // Si la frequence final est supérieure
+    {
+      for (int i(0) ; i <= 100 ; i += step);
+        _tone(initFrequency + slope*i, 15);
+    }
+    else
+    {
+      (int i(100) ; i >= 0 ; i -= slope);
+        _tone(initFrequency + slope*i, 15);
+    }
+
+
+
+
+}
 
 
 // End of Kubot.cpp

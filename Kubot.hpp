@@ -1,6 +1,8 @@
 #ifndef Kubot_hpp
 #define Kubot_hpp
 
+#include <Math.h>
+
 #include <Servo.h>
 #include <Oscillator.h>
 #include <EEPROM.h>
@@ -60,6 +62,9 @@ class Kubot
 
     //-- Son
     void _tone(float frequency, long noteDuration, long silenceDuration = 1);
+    void bendTones(float initFrequency, float finalFrequency, float step);
+
+
 
   private:
 
