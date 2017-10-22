@@ -167,6 +167,27 @@ void Kubot::oscillateServos(int A[4], int O[4], int T, double Ph[4], float cycle
   }
 }
 
+ void Kubot::Oscillate(int A[4], int O[4], int T, double phase_diff[4], float steps)
+ {
+   attachServos();
+   setRestState(false);
+
+   float cycles = trunc(steps);
+
+   if(steps >= 1)
+   {
+
+     for(int i(0) ; i < cycles; ++i)
+      oscillateServos(A,O,T,phase_diff);
+   }
+
+   oscillateServos(A,O,T,phase_diff,steps-cycles);
+
+ }
+
+
+
+
 
 ////////////////////////////////////////////////
 /// Homing: Controle de la position de repos ///
