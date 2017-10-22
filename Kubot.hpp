@@ -49,7 +49,7 @@ class Kubot
     //-- Contrôle basique des servos
     void moveServos(int duration, int  servo_target[]);
     void oscillateServos(int A[4], int O[4], int T, double phase_diff[4], float cycle = 1.0);
-    void  oscillate(int A[4], int O[4], int T, double phase_diff[4], float steps = 1.0);
+
     //-- HOME = Kubot à sa position de repos
     void home();
     bool getRestState();
@@ -64,7 +64,12 @@ class Kubot
     void _tone(float frequency, long noteDuration, long silenceDuration = 1);
     void bendTones(float initFrequency, float finalFrequency, float _step);
 
+  private:
 
+    // Cette fonction est utilisé seulement pour les mouvements pré-programmés...
+    // Elle permet de raisonner en terme de pas et définir l'état du Kubot.
+    // TODO: Peut-être mergé cette fonction avec oscillateServos
+    void oscillate(int A[4], int O[4], int T, double phase_diff[4], float steps = 1.0);
 
   private:
 
@@ -82,7 +87,7 @@ class Kubot
 
     bool isResting;
 
-//    void _execute(int A[4], int O[4], int T, double phase_diff[4], float steps);
+
 
 };
 

@@ -139,6 +139,8 @@ void Kubot::moveServos(int duration, int  servo_target[])
     servo_position[i] = servo_target[i];
 }
 
+
+
 void Kubot::oscillateServos(int A[4], int O[4], int T, double Ph[4], float cycle)
 {
   for (int i(0); i<4; i++)
@@ -167,23 +169,24 @@ void Kubot::oscillateServos(int A[4], int O[4], int T, double Ph[4], float cycle
   }
 }
 
- void Kubot::Oscillate(int A[4], int O[4], int T, double phase_diff[4], float steps)
- {
-   attachServos();
-   setRestState(false);
 
-   float cycles = trunc(steps);
 
-   if(steps >= 1)
-   {
+void Kubot::oscillate(int A[4], int O[4], int T, double phase_diff[4], float steps)
+{
+  attachServos();
+  setRestState(false);
 
-     for(int i(0) ; i < cycles; ++i)
+  float cycles = trunc(steps);
+
+  if(steps >= 1)
+  {
+    for(int i(0) ; i < cycles; ++i)
       oscillateServos(A,O,T,phase_diff);
-   }
+  }
 
-   oscillateServos(A,O,T,phase_diff,steps-cycles);
+  oscillateServos(A,O,T,phase_diff,steps-cycles);
 
- }
+}
 
 
 
