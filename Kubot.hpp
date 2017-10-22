@@ -60,9 +60,18 @@ class Kubot
     float getDistance(); //Capteur ultrasons
     int getNoise();      //Capteur de bruit
 
-    //-- Son
+    //-- Sons
     void _tone(float frequency, long noteDuration, long silenceDuration = 1);
     void bendTones(float initFrequency, float finalFrequency, float _step);
+
+
+
+    //-- Mouvements pré-Déterminés...
+
+
+    void jump(int T = 2000);
+    void walk(float steps=4, int T=1000, int dir = FORWARD);
+    void updown(float steps=1, int T=1000, int h = 20);
 
   private:
 

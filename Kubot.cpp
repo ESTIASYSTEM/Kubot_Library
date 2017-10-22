@@ -302,4 +302,61 @@ void Kubot::bendTones(float initFrequency, float finalFrequency, float _step)
 }
 
 
+
+
+//////////////////////////////
+/// Son: Gestion du buzzer ///
+//////////////////////////////
+
+// Sauter ne peut se faire qu'une fois (donc pas de steps...)
+void Kubot::jump(int T)
+{
+  int up[]={90,90,150,30};
+  int down[]={90,90,90,90};
+
+
+  moveServos(T/2.f,up);
+  moveServos(T/2.f,down);
+}
+
+
+void Kubot::walk(float steps, int T, int dir)
+{
+  /*
+   * Description de la marche:
+   * Les servos des hanches et des pieds sont synchronisés (ils effectues les memes mouvements)
+   * mais sont déphasés de 90degrées.le signe donne le sens de marche.
+   * Un leger offset sur les pieds permet au kubot de marcher sur ses pointes
+   */
+
+   int A[] = {30,30,20,20};
+   int O[] = {0,0,4,-4};
+
+   // le signe donne le sens de marche
+   double phase_diff[4] = {0, 0, DEG2RAD(dir * -90), DEG2RAD(dir * -90)};
+
+   oscillate(A,O,T,phase_diff,steps);
+
+}
+
+
+
+void Kubot::updown(float steps, int T, int h)
+{
+  /*
+   * Description du up&down
+   * Tout les servos sont synchronisés et en phase...
+   * h donne la hauteur du mouvement
+   */
+
+   int A[] = {0,0,h,h};
+   int O[] = {0,0,-h,h};
+   double phase_diff[] = {0,0,DEG2RAD(-90),0};
+
+   oscillate(A,O,T,phase_diff,steps);
+}
+
+
+
+
 // End of Kubot.cpp
