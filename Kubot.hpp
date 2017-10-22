@@ -62,7 +62,7 @@ class Kubot
 
     //-- Son
     void _tone(float frequency, long noteDuration, long silenceDuration = 1);
-    void bendTones(float initFrequency, float finalFrequency, float step);
+    void bendTones(float initFrequency, float finalFrequency, float _step);
 
 
 

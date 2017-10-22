@@ -254,7 +254,7 @@ void Kubot::_tone(float frequency, long noteDuration, long silenceDuration)
 
 // Permet au Kubot de jouer une note courbée
 // dans la première itération, le temps par note est fixé à 15ms
-void Kubot::bendTones(float initFrequency, float finalFrequency, float step)
+void Kubot::bendTones(float initFrequency, float finalFrequency, float _step)
 {
     bool ascending = (finalFrequency > initFrequency);
 
@@ -263,12 +263,12 @@ void Kubot::bendTones(float initFrequency, float finalFrequency, float step)
 
     if (ascending) // Si la frequence final est supérieure
     {
-      for (int i(0) ; i <= 100 ; i += step);
+      for (int i(0) ; i <= 100 ; i += _step)
         _tone(initFrequency + slope*i, 15);
     }
     else
     {
-      (int i(100) ; i >= 0 ; i -= slope);
+      for (int i(100) ; i >= 0 ; i -= _step)
         _tone(initFrequency + slope*i, 15);
     }
 
