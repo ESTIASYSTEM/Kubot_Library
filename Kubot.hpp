@@ -34,9 +34,9 @@ class Kubot
   public:
 
     //-- Initialisation du Kubot.
-    void init(int YL, int YR, int RL, int RR, bool load_calibration=true,
-              int NoiseSensor=PIN_NoiseSensor, int Buzzer=PIN_Buzzer,
-              int USTrigger=PIN_Trigger, int USEcho=PIN_Echo);
+    void initialize(int YL, int YR, int RL, int RR, bool load_calibration=true,
+                    int NoiseSensor=PIN_NoiseSensor, int Buzzer=PIN_Buzzer,
+                    int USTrigger=PIN_Trigger, int USEcho=PIN_Echo);
 
     //-- Fonctions Attach & detach
     void attachServos();

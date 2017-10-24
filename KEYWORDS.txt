@@ -6,12 +6,32 @@
 # Datatypes (KEYWORD1)
 #######################################
 
-Kubot	KEYWORD1
+Kubot       KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
 #######################################
 
+initialize        KEYWORD2
+
+attachServos      KEYWORD2
+detachServos      KEYWORD2
+
+setTrims          KEYWORD2
+saveTrimsOnEEPROM KEYWORD2
+
+moveServos        KEYWORD2
+oscillateServos   KEYWORD2
+
+home              KEYWORD2
+getRestState      KEYWORD2
+setRestState      KEYWORD2
+
+getDistance       KEYWORD2
+getNoise          KEYWORD2
+
+_tone             KEYWORD2
+bendTones         KEYWORD2
 
 ######################################
 # Constants (LITERAL1)
