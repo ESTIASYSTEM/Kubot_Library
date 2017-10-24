@@ -1,7 +1,7 @@
 #include "Kubot.hpp"
 
 
-void Kubot::init(int YL, int YR, int RL, int RR, bool load_calibration, int NoiseSensor, int Buzzer, int USTrigger, int USEcho)
+void Kubot::initialize(int YL, int YR, int RL, int RR, bool load_calibration, int NoiseSensor, int Buzzer, int USTrigger, int USEcho)
 {
 
   servo_pins[0] = YL;
