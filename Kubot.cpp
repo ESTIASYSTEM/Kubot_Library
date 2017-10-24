@@ -357,6 +357,24 @@ void Kubot::updown(float steps, int T, int h)
 }
 
 
+void Kubot::swing(float steps, int T, int h)
+{
+
+  /*
+   * Description du de swing
+   * Les deux pieds sont en phase
+   * Le robot se balance d'un coté à l'autre
+   * h est la hauteur du balancement
+   */
+  int A[4]= {0, 0, h, h};
+  int O[4] = {0, 0, h/2, -h/2};
+  double phase_diff[4] = {0, 0, 0, 0};
+
+  oscillate(A, O, T, phase_diff, steps);
+
+}
+
+
 
 
 // End of Kubot.cpp
