@@ -299,7 +299,7 @@ void Kubot::_tone(float frequency, long noteDuration, long silenceDuration)
 
 void Kubot::glissando(float initFrequency, float finalFrequency, float duration)
 {
-  const float noteDuration = 15 // ms. Temps fixé pour faire un beau glissendo
+  const float noteDuration = 15; // ms. Temps fixé pour faire un beau glissendo
 
   bool ascending = (finalFrequency > initFrequency);
 
@@ -416,8 +416,8 @@ void Kubot::updown(float steps, int T, int h)
 {
    // Tout les servos sont synchronisés et en phase
    int A[] = {0,0,h,h};
-   int O[] = {0,0,-h,h};
-   double phase_diff[] = {0,0,DEG2RAD(-90),0};
+   int O[] = {0,0,h,-h};
+   double phase_diff[] = {0,0,DEG2RAD(-90),DEG2RAD(90)};
 
    oscillate(A,O,T,phase_diff,steps);
 }
@@ -506,11 +506,11 @@ void Kubot::shakeLeg (int steps,int T,int dir)
   for (int j = 0; j < steps; j++)
   {
   //Penchage
-  moveServos(T2/2,shake_leg1);
-  moveServos(T2/2,shake_leg2);
+  moveServos(Ttravel/2,shake_leg1);
+  moveServos(Ttravel/2,shake_leg2);
 
     //Secouage
-    for (int i=0;i<numberLegMoves;i++)
+    for (int i = 0; i < numberLegMoves; i++)
     {
     moveServos(T/(2*numberLegMoves),shake_leg3);
     moveServos(T/(2*numberLegMoves),shake_leg2);
