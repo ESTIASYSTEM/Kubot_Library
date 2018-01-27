@@ -31,7 +31,7 @@ getDistance       KEYWORD2
 getNoise          KEYWORD2
 
 _tone             KEYWORD2
-bendTones         KEYWORD2
+glissando         KEYWORD2
 
 
 jump              KEYWORD2
