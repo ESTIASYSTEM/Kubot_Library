@@ -66,13 +66,26 @@ class Kubot
 
 
 
-    //-- Mouvements pré-Déterminés...
-
-
+    //-- Mouvements spéciaux
     void jump(int T = 2000);
     void walk(float steps=4, int T=1000, int dir = FORWARD);
-    void updown(float steps=1, int T=1000, int h = 20);
+    void turn(float steps=4, int T=2000, int dir = LEFT);
+
     void swing(float steps, int T, int h)
+    void bend (int steps=1, int T=1400, int dir=LEFT);
+    void shakeLeg (int steps=1, int T = 2000, int dir=RIGHT);
+
+    void updown(float steps=1, int T=1000, int h = 20);
+    void swing(float steps=1, int T=1000, int h=20);
+    void tiptoeSwing(float steps=1, int T=900, int h=20);
+
+    void jitter(float steps=1, int T=500, int h=20);
+    void ascendingTurn(float steps=1, int T=900, int h=20);
+
+    void moonwalker(float steps=1, int T=900, int h=20, int dir=LEFT);
+    void crusaito(float steps=1, int T=900, int h=20, int dir=FORWARD);
+    void flapping(float steps=1, int T=1000, int h=20, int dir=FORWARD);
+
 
   private:
 
