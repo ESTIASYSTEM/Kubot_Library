@@ -34,9 +34,9 @@ class Kubot
   public:
 
     //-- Initialisation du Kubot.
-    void init(int YL, int YR, int RL, int RR, bool load_calibration=true,
-              int NoiseSensor=PIN_NoiseSensor, int Buzzer=PIN_Buzzer,
-              int USTrigger=PIN_Trigger, int USEcho=PIN_Echo);
+    void initialize(int YL, int YR, int RL, int RR, bool load_calibration=true,
+                    int NoiseSensor=PIN_NoiseSensor, int Buzzer=PIN_Buzzer,
+                    int USTrigger=PIN_Trigger, int USEcho=PIN_Echo);
 
     //-- Fonctions Attach & detach
     void attachServos();
@@ -60,9 +60,31 @@ class Kubot
     float getDistance(); //Capteur ultrasons
     int getNoise();      //Capteur de bruit
 
-    //-- Son
+    //-- Sons
     void _tone(float frequency, long noteDuration, long silenceDuration = 1);
-    void bendTones(float initFrequency, float finalFrequency, float _step);
+    void glissando(float initFrequency, float finalFrequency, float duration);
+
+
+
+    //-- Mouvements spéciaux
+    void jump(int T = 2000);
+    void walk(float steps=4, int T=1000, int dir = FORWARD);
+    void turn(float steps=4, int T=2000, int dir = LEFT);
+
+    void swing(float steps, int T, int h);
+    void bend (int steps=1, int T=1400, int dir=LEFT);
+    void shakeLeg (int steps=1, int T = 2000, int dir=RIGHT);
+
+    void updown(float steps=1, int T=1000, int h = 20);
+    void tiptoeSwing(float steps=1, int T=900, int h=20);
+
+    void jitter(float steps=1, int T=500, int h=20);
+    void ascendingTurn(float steps=1, int T=900, int h=20);
+
+    void moonwalker(float steps=1, int T=900, int h=20, int dir=LEFT);
+    void crusaito(float steps=1, int T=900, int h=20, int dir=FORWARD);
+    void flapping(float steps=1, int T=1000, int h=20, int dir=FORWARD);
+
 
   private:
 

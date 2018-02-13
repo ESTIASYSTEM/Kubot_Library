@@ -1,7 +1,7 @@
 #include "Kubot.hpp"
 
 
-void Kubot::init(int YL, int YR, int RL, int RR, bool load_calibration, int NoiseSensor, int Buzzer, int USTrigger, int USEcho)
+void Kubot::initialize(int YL, int YR, int RL, int RR, bool load_calibration, int NoiseSensor, int Buzzer, int USTrigger, int USEcho)
 {
 
   servo_pins[0] = YL;
@@ -278,7 +278,7 @@ void Kubot::_tone(float frequency, long noteDuration, long silenceDuration)
 
 // Permet au Kubot de jouer une note courbée
 // dans la première itération, le temps par note est fixé à 15ms
-void Kubot::bendTones(float initFrequency, float finalFrequency, float _step)
+/*void Kubot::bendTones(float initFrequency, float finalFrequency, float _step)
 {
     bool ascending = (finalFrequency > initFrequency);
 
@@ -295,11 +295,401 @@ void Kubot::bendTones(float initFrequency, float finalFrequency, float _step)
       for (int i(100) ; i >= 0 ; i -= _step)
         _tone(initFrequency + slope*i, 15);
     }
+}*/
+
+void Kubot::glissando(float initFrequency, float finalFrequency, float duration)
+{
+  const float noteDuration = 15; // ms. Temps fixé pour faire un beau glissendo
+
+  bool ascending = (finalFrequency > initFrequency);
+
+  float nbPas = duration/noteDuration;
+  float step = (finalFrequency-initFrequency)/nbPas;
+
+  if(ascending)
+  {
+    for(int i = 0 ; i < nbPas ; i++)
+        _tone(initFrequency + i*step, noteDuration);
+
+  }
+  else
+  {
+    for(int i = nbPas ; i > 0 ; i--)
+      _tone(finalFrequency - i*step, noteDuration);
+  }
+}
 
 
 
+//////////////////////////////
+/// Movements spéciaux ///
+//////////////////////////////
+
+/***********************************************
+ *  \function:  Kubot::jump
+ *  \desc       Fait "sauter" le kubot (en tout cas ça en à l'air...) il s'agit
+ *              d'un up&down simplifier s'executant une fois à une hauteur prédéterminée
+ *              On pourrait la supprimer mais bon...
+ *  \param      T: Period
+ ***********************************************/
+void Kubot::jump(int T)
+{
+  int up[]={90,90,150,30};
+  int down[]={90,90,90,90};
+
+
+  moveServos(T/2.f,up);
+  moveServos(T/2.f,down);
+}
+
+
+/***********************************************
+ *  \function:  Kubot::walk
+ *  \desc       Le kubot avance ou recule
+ *  \param      Steps: Nombre de pas
+ *  \param      T: Periode
+ *  \param      Dir: Direction: FORWARD / BACKWARD
+ ***********************************************/
+void Kubot::walk(float steps, int T, int dir)
+{
+  /*
+   * Description de la marche:
+   * Les servos des hanches et des pieds sont synchronisés (ils effectues les memes mouvements)
+   * mais sont déphasés de 90degrées.le signe donne le sens de marche.
+   * Un leger offset sur les pieds permet au kubot de marcher sur ses pointes
+   */
+
+   int A[] = {30,30,20,20};
+   int O[] = {0,0,4,-4};
+
+   // le signe donne le sens de marche
+   double phase_diff[4] = {0, 0, DEG2RAD(dir * -90), DEG2RAD(dir * -90)};
+
+   oscillate(A,O,T,phase_diff,steps);
 
 }
+
+
+
+/***********************************************
+ *  \function:  Kubot::turn
+ *  \desc       Tourne à gauche ou a droite
+ *  \param      Steps: Number of steps
+ *  \param      T: Period
+ *  \param      Dir: Direction: LEFT / RIGHT
+ ***********************************************/
+void Kubot::turn(float steps, int T, int dir)
+{
+
+  /* A peut prêt pareil que pour la marche (cf Kubot::walk)
+  * La différence est que l'amplitude de mouvement des deux hanches est différente
+  * i.e. Quand le servo droit a une plus grande amplitude les pas à droite sont plus grands
+  * et donc le kubot va vers la gauche
+  */
+  int A[4]= {30, 30, 20, 20};
+  int O[4] = {0, 0, 4, -4};
+  double phase_diff[4] = {0, 0, DEG2RAD(-90), DEG2RAD(-90)};
+
+  if (dir == LEFT)
+  {
+    A[0] = 30; // hanche gauche
+    A[1] = 10; // hanche droite
+  }
+  else
+  {
+    A[0] = 10;
+    A[1] = 30;
+  }
+
+  oscillate(A, O, T, phase_diff, steps);
+}
+
+
+/***********************************************
+ *  \function:  Kubot::up&down
+ *  \desc       le Kubot se leve et s'assois
+ *  \param      Steps: nombre de répétition
+ *  \param      T: Periode
+ *  \param      h: Hauteur du mouvement
+ ***********************************************/
+void Kubot::updown(float steps, int T, int h)
+{
+   // Tout les servos sont synchronisés et en phase
+   int A[] = {0,0,h,h};
+   int O[] = {0,0,h,-h};
+   double phase_diff[] = {0,0,DEG2RAD(-90),DEG2RAD(90)};
+
+   oscillate(A,O,T,phase_diff,steps);
+}
+
+
+
+/***********************************************
+ *  \function:  Kubot::bend
+ *  \desc       Le Kubot se penche d'un côté
+ *  \param      Steps: Nombre de "penchage"
+ *  \param      T: temps d'attente pendant le penchage
+ *  \param      Dir: "direction du penchage: LEFT / RIGHT
+ ***********************************************/
+void Kubot::bend (int steps, int T, int dir)
+{
+
+  //Par defaut le kubot se penche à gauche
+  int bend1[4]={90, 90, 62, 35};
+  int bend2[4]={90, 90, 62, 105};
+  int homes[4]={90, 90, 90, 90};
+
+  //On limite le temps de penchage a 600 pour eviter des penchages trop rapides
+  T=max(T, 600);
+
+  // On change de parametres si on se penche a droite
+  if(dir==RIGHT)
+  {
+    bend1[2] = 180-35;
+    bend1[3] = 180-60;  // A partir de 65, le kubot tombe
+    bend2[2] = 180-105;
+    bend2[3] = 180-60;
+  }
+
+  //temps d'execution du penchage.
+  int Ttravel = 800;
+
+  //Bend movement
+  for (int i = 0 ; i < steps ; i++)
+  {
+    moveServos(Ttravel/2,bend1);
+    moveServos(Ttravel/2,bend2);
+    delay(T*0.8); // temps d'attempte entre chaque penchage *
+    moveServos(500,homes);
+  }
+
+}
+
+
+/***********************************************
+ *  \function:  Kubot::shakeLeg
+ *  \desc       secoue la jambe, genre comme un ptit chien
+ *  \param      Steps: Nombre de sequences
+ *  \param      T: Periode
+ *  \param      Dir: jambe qui se secoue LEFT / RIGHT
+ ***********************************************/
+void Kubot::shakeLeg (int steps,int T,int dir)
+{
+
+  // Nombre de secousse de jambe
+  int numberLegMoves = 2;
+
+  //Parametre par défaut: on secoue la jambe droite
+  int shake_leg1[4]={90, 90, 58, 35};
+  int shake_leg2[4]={90, 90, 58, 120};
+  int shake_leg3[4]={90, 90, 58, 60};
+  int homes[4]={90, 90, 90, 90};
+
+  //On secoue la gauche dans le cas contraire
+  if(dir==LEFT)
+  {
+    shake_leg1[2]=180-35;
+    shake_leg1[3]=180-58;
+    shake_leg2[2]=180-120;
+    shake_leg2[3]=180-58;
+    shake_leg3[2]=180-60;
+    shake_leg3[3]=180-58;
+  }
+
+  //temps de penchage
+  int Ttravel=1000;
+
+  //temps pour un secouage de jambe.
+  T=T-Ttravel;
+  T=max(T,200*numberLegMoves);
+
+  for (int j = 0; j < steps; j++)
+  {
+  //Penchage
+  moveServos(Ttravel/2,shake_leg1);
+  moveServos(Ttravel/2,shake_leg2);
+
+    //Secouage
+    for (int i = 0; i < numberLegMoves; i++)
+    {
+    moveServos(T/(2*numberLegMoves),shake_leg3);
+    moveServos(T/(2*numberLegMoves),shake_leg2);
+    }
+    moveServos(500,homes); //OHM SWEET OHM
+  }
+
+  delay(T);
+}
+
+
+/***********************************************
+ *  \function:  Kubot::swing
+ *  \desc       Le kubot se balance de droite à gaucher
+ *  \param      Steps: Nombre de balancement
+ *  \param      T: Periode
+ *  \param      h: amplitude des balancements
+ ***********************************************/
+void Kubot::swing(float steps, int T, int h)
+{
+
+   // Les deux pieds sont en phase
+
+  int A[4]= {0, 0, h, h};
+  int O[4] = {0, 0, h/2, -h/2};
+  double phase_diff[4] = {0, 0, 0, 0};
+
+  oscillate(A, O, T, phase_diff, steps);
+
+}
+
+
+
+
+/***********************************************
+ *  \function:  Kubot::tiptoeSwing
+ *  \desc       Pareil qu'un swing mais sur la pointe des pieds
+ *  \param      Steps: nombre de balancements
+ *  \param      T: durée de balancements
+ *  \param      h: amplitude des balancements (0 à ~50)
+ ***********************************************/
+void Kubot::tiptoeSwing(float steps, int T, int h)
+{
+
+  // Les deux pieds sont en phase
+  // L'offset est différent pour permettre au Kubot de se mettre
+  // sur la pointe des pieds
+
+  int A[4]= {0, 0, h, h};
+  int O[4] = {0, 0, h, -h};
+  double phase_diff[4] = {0, 0, 0, 0};
+
+  oscillate(A, O, T, phase_diff, steps);
+}
+
+
+// Les mouvements si dessous sont directement repris de la librairie
+// pour le robot OTTO.
+
+//---------------------------------------------------------
+//-- Kubot gait: Jitter
+//--  Parameters:
+//--    steps: Number of jitters
+//--    T: Period of one jitter
+//--    h: height (Values between 5 - 25)
+//---------------------------------------------------------
+void Kubot::jitter(float steps, int T, int h)
+{
+
+  //-- Both feet are 180 degrees out of phase
+  //-- Feet amplitude and offset are the same
+  //-- Initial phase for the right foot is -90, so that it starts
+  //--   in one extreme position (not in the middle)
+  //-- h is constrained to avoid hit the feets
+  h=min(25,h);
+  int A[4]= {h, h, 0, 0};
+  int O[4] = {0, 0, 0, 0};
+  double phase_diff[4] = {DEG2RAD(-90), DEG2RAD(90), 0, 0};
+
+  //-- Let's oscillate the servos!
+  oscillate(A, O, T, phase_diff, steps);
+}
+
+
+//---------------------------------------------------------
+//-- Kubot gait: Ascending & turn (Jitter while up&down)
+//--  Parameters:
+//--    steps: Number of bends
+//--    T: Period of one bend
+//--    h: height (Values between 5 - 15)
+//---------------------------------------------------------
+void Kubot::ascendingTurn(float steps, int T, int h)
+{
+
+  //-- Both feet and legs are 180 degrees out of phase
+  //-- Initial phase for the right foot is -90, so that it starts
+  //--   in one extreme position (not in the middle)
+  //-- h is constrained to avoid hit the feets
+  h=min(13,h);
+  int A[4]= {h, h, h, h};
+  int O[4] = {0, 0, h+4, -h+4};
+  double phase_diff[4] = {DEG2RAD(-90), DEG2RAD(90), DEG2RAD(-90), DEG2RAD(90)};
+
+  //-- Let's oscillate the servos!
+  oscillate(A, O, T, phase_diff, steps);
+}
+
+
+//---------------------------------------------------------
+//-- Kubot gait: Moonwalker. Kubot moves like Michael Jackson
+//--  Parameters:
+//--    Steps: Number of steps
+//--    T: Period
+//--    h: Height. Typical valures between 15 and 40
+//--    dir: Direction: LEFT / RIGHT
+//---------------------------------------------------------
+void Kubot::moonwalker(float steps, int T, int h, int dir)
+{
+
+  //-- This motion is similar to that of the caterpillar robots: A travelling
+  //-- wave moving from one side to another
+  //-- The two Kubot's feet are equivalent to a minimal configuration. It is known
+  //-- that 2 servos can move like a worm if they are 120 degrees out of phase
+  //-- In the example of Kubot, the two feet are mirrored so that we have:
+  //--    180 - 120 = 60 degrees. The actual phase difference given to the oscillators
+  //--  is 60 degrees.
+  //--  Both amplitudes are equal. The offset is half the amplitud plus a little bit of
+  //-   offset so that the robot tiptoe lightly
+
+  int A[4]= {0, 0, h, h};
+  int O[4] = {0, 0, h/2+2, -h/2 -2};
+  int phi = -dir * 90;
+  double phase_diff[4] = {0, 0, DEG2RAD(phi), DEG2RAD(-60 * dir + phi)};
+
+  //-- Let's oscillate the servos!
+  oscillate(A, O, T, phase_diff, steps);
+}
+
+
+//----------------------------------------------------------
+//-- Kubot gait: Crusaito. A mixture between moonwalker and walk
+//--   Parameters:
+//--     steps: Number of steps
+//--     T: Period
+//--     h: height (Values between 20 - 50)
+//--     dir:  Direction: LEFT / RIGHT
+//-----------------------------------------------------------
+void Kubot::crusaito(float steps, int T, int h, int dir)
+{
+
+  int A[4]= {25, 25, h, h};
+  int O[4] = {0, 0, h/2+ 4, -h/2 - 4};
+  double phase_diff[4] = {90, 90, DEG2RAD(0), DEG2RAD(-60 * dir)};
+
+  //-- Let's oscillate the servos!
+  oscillate(A, O, T, phase_diff, steps);
+}
+
+
+//---------------------------------------------------------
+//-- Kubot gait: Flapping
+//--  Parameters:
+//--    steps: Number of steps
+//--    T: Period
+//--    h: height (Values between 10 - 30)
+//--    dir: direction: FOREWARD, BACKWARD
+//---------------------------------------------------------
+void Kubot::flapping(float steps, int T, int h, int dir)
+{
+
+  int A[4]= {12, 12, h, h};
+  int O[4] = {0, 0, h - 10, -h + 10};
+  double phase_diff[4] = {DEG2RAD(0), DEG2RAD(180), DEG2RAD(-90 * dir), DEG2RAD(90 * dir)};
+
+  //-- Let's oscillate the servos!
+  oscillate(A, O, T, phase_diff, steps);
+}
+
+
 
 
 // End of Kubot.cpp
